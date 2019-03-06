@@ -1,0 +1,10 @@
+services:
+    deployer_bundle.command.deployer:
+        class: Adamski\Symfony\DeployerBundle\Command\DeployerRunCommand
+        arguments:
+            - "%kernel.project_dir%"
+        tags:
+            - { name: console.command }
+
+    Adamski\Symfony\DeployerBundle\Command\DeployerRunCommand:
+        alias: deployer_bundle.command.deployer

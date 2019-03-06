@@ -1,0 +1,41 @@
+{
+    "name": "m-adamski/symfony-deployer-bundle",
+    "description": "Bundle for Symfony 4 for easier Deployer configuration",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maciej Adamski",
+            "email": "m.adamski@ideacode.pl"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "symfony/console": "^4.2",
+        "symfony/framework-bundle": "^3.4|^4.1",
+        "symfony/process": "^3.4|^4.1"
+    },
+    "require-dev": {
+        "kint-php/kint": "^3.0",
+        "phpunit/phpunit": "^7.4",
+        "symfony/phpunit-bridge": "^4.1"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Adamski\\Symfony\\DeployerBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Adamski\\Symfony\\DeployerBundleTests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
