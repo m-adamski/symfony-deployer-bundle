@@ -127,6 +127,7 @@ class DeployerRunCommand extends Command {
         // %rootPath%\vendor\bin\dep --file=.deployer\deploy.php ssh %verifyHostname%
         $executeProcess = $this->generateProcess($deployerVendor, "-f.deployer/deploy.php", "ssh", $verifyHostname);
         $executeProcess->disableOutput();
+        $executeProcess->setTimeout(null);
         $executeProcess->run(function ($type, $buffer) {
             echo $buffer;
         });
@@ -158,6 +159,7 @@ class DeployerRunCommand extends Command {
         // %rootPath%\vendor\bin\dep --file=.deployer\deploy.php %taskName% %taskStage%
         $executeProcess = $this->generateProcess($deployerVendor, "-f.deployer/deploy.php", $taskName, $taskStage);
         $executeProcess->disableOutput();
+        $executeProcess->setTimeout(null);
         $executeProcess->run(function ($type, $buffer) {
             echo $buffer;
         });
