@@ -1,3 +1,141 @@
 #!/usr/bin/env bash
 
-echo "Hello World!"
+# Define colors
+COLOR_DEFAULT="\033[0m"
+COLOR_GREEN="\033[0;32m"
+COLOR_YELLOW="\033[0;33m"
+
+# Define background colors
+BACKGROUND_RED="\033[41m"
+
+# Define available actions
+AVAILABLE_ACTIONS=("Generate SSH Key" "Test the SSH connection" "Run the Deployer task")
+
+# Define default action
+DEFAULT_ACTION_INDEX=2
+DEFAULT_ACTION_VALUE=${AVAILABLE_ACTIONS[DEFAULT_ACTION_INDEX]}
+
+# Print specified message
+function e {
+    local value=$1
+
+    value=${value//"<comment>"/${COLOR_YELLOW}}
+    value=${value//"<info>"/${COLOR_GREEN}}
+    value=${value//"<error>"/${BACKGROUND_RED}}
+    value=${value//"</comment>"/${COLOR_DEFAULT}}
+    value=${value//"</info>"/${COLOR_DEFAULT}}
+    value=${value//"</error>"/${COLOR_DEFAULT}}
+
+    echo -e " ${value}"
+}
+
+# Generate SSH key
+function action_generate {
+
+    e ""
+    e "<comment>Generating the SSH key</comment>"
+    e "<comment>----------------------</comment>"
+    e ""
+
+    # Define default variables
+    local default_destination="${PWD}/.deployer/.ssh"
+    local default_name="deployer_rsa"
+
+    # Define destination path
+    e "<info>The location of the generated SSH keys:</info> [<comment>${default_destination}</comment>]"
+    read -p " > " -e -i ${default_destination} destination
+
+    # Define filename
+    e ""
+    e "<info>The name of the SSH key:</info> [<comment>${default_name}</comment>]"
+    read -p " > " -e -i ${default_name} name
+    e ""
+
+    # Run process to generate key with ssh-keygen
+    # ssh-keygen -t rsa -f %sshKey% -N "" -C "deployer"
+    ssh-keygen -t rsa -f "${destination}/${name}" -N "" -C "deployer"
+}
+
+# Test connection with specified host
+function action_connect {
+
+    e ""
+    e "<comment>Testing the SSH connection</comment>"
+    e "<comment>--------------------------</comment>"
+    e ""
+
+    # Define path to the deployer configuration
+    local configuration_path="${PWD}/.deployer/deploy.php"
+
+    # Check if configuration file exits
+    if [[ ! -f "${configuration_path}" ]]; then
+        e "<error>Configuration file not found in the given location</error>"
+        exit
+    fi
+
+    # Ask for hostname to verify
+    e "<info>Please enter the hostname to verify:</info>"
+    read -p " > " -e hostname
+    e ""
+
+    # Run process to test SSH connection
+    # %rootPath%\vendor\bin\dep --file=.deployer\deploy.php ssh %verifyHostname%
+    vendor/bin/dep -f.deployer/deploy.php ssh ${hostname}
+}
+
+# Deploy changes
+function action_deploy {
+
+    e ""
+    e "<comment>Running the Deployer task</comment>"
+    e "<comment>-------------------------</comment>"
+    e ""
+
+    # Define path to the deployer configuration
+    local configuration_path="${PWD}/.deployer/deploy.php"
+
+    # Check if configuration file exits
+    if [[ ! -f "${configuration_path}" ]]; then
+        e "<error>Configuration file not found in the given location</error>"
+        exit
+    fi
+
+    # Ask for task name and stage
+    e "<info>Please provide the name of the task to run:</info>"
+    read -p " > " -e -i "deploy" task
+
+    e ""
+    e "<info>Please provide the stage:</info>"
+    read -p " > " -e -i "develop" stage
+    e ""
+
+    # Run Deployer task
+    # %rootPath%\vendor\bin\dep --file=.deployer\deploy.php %taskName% %taskStage%
+    vendor/bin/dep -f.deployer/deploy.php ${task} ${stage}
+}
+
+# Print main menu
+function print_menu {
+
+    # Print question content
+    e ""
+    e "<info>Please select the action you want to perform:</info> [<comment>${DEFAULT_ACTION_VALUE}</comment>]"
+
+    # Print choices
+    for index in "${!AVAILABLE_ACTIONS[@]}"
+    do
+        e " [<comment>${index}</comment>] ${AVAILABLE_ACTIONS[$index]}"
+    done
+
+    # Wait for response
+    read -p " > " -e -i ${DEFAULT_ACTION_INDEX} action
+
+    case ${action} in
+        0) action_generate;;
+        1) action_connect;;
+        2) action_deploy;;
+        *) print_menu;;
+    esac
+}
+
+print_menu
