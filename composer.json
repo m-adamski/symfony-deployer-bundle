@@ -33,6 +33,9 @@
             "Adamski\\Symfony\\DeployerBundleTests\\": "tests/"
         }
     },
+    "bin": [
+        "bin/deployer"
+    ],
     "extra": {
         "branch-alias": {
             "dev-master": "1.0.x-dev"
