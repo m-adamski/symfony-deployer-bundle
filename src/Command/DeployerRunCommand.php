@@ -114,11 +114,11 @@ class DeployerRunCommand extends Command {
 
         // Check if Deployer entry file exist in specified path
         if (!file_exists($deployerConfigPath)) {
-            throw new Exception("Configuration file not found in the given location");
+            throw new Exception("Configuration file not found");
         }
 
         // Ask for hostname to verify
-        $verifyHostname = $io->ask("Please enter the hostname to verify:");
+        $verifyHostname = $io->ask("Hostname to verify:");
 
         // Define path to Deployer vendor
         $deployerVendor = $this->generatePath($this->projectDirectory, "vendor", "bin", "dep");
@@ -145,12 +145,15 @@ class DeployerRunCommand extends Command {
 
         // Check if Deployer entry file exist in specified path
         if (!file_exists($deployerConfigPath)) {
-            throw new Exception("Configuration file not found in the given location");
+            throw new Exception("Configuration file not found");
         }
 
         // Ask for task name and stage
-        $taskName = $io->ask("Please provide the name of the task to run:", "deploy");
-        $taskStage = $io->ask("Please provide the stage:", "develop");
+        $taskName = $io->ask("Name of the task to run:", "deploy");
+        $taskStage = $io->ask("Stage:", "develop");
+
+        // TTY mode
+        $useTTY = $io->confirm("Enable TTY mode?", false);
 
         // Define path to Deployer vendor
         $deployerVendor = $this->generatePath($this->projectDirectory, "vendor", "bin", "dep");
@@ -159,6 +162,7 @@ class DeployerRunCommand extends Command {
         // %rootPath%\vendor\bin\dep --file=.deployer\deploy.php %taskName% %taskStage%
         $executeProcess = $this->generateProcess($deployerVendor, "-f.deployer/deploy.php", $taskName, $taskStage);
         $executeProcess->disableOutput();
+        $executeProcess->setTty($useTTY);
         $executeProcess->setTimeout(null);
         $executeProcess->run(function ($type, $buffer) {
             echo $buffer;

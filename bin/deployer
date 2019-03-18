@@ -69,12 +69,12 @@ function action_connect {
 
     # Check if configuration file exits
     if [[ ! -f "${configuration_path}" ]]; then
-        e "<error>Configuration file not found in the given location</error>"
+        e "<error>Configuration file not found</error>"
         exit
     fi
 
     # Ask for hostname to verify
-    e "<info>Please enter the hostname to verify:</info>"
+    e "<info>Hostname to verify:</info>"
     read -p " > " -e hostname
     e ""
 
@@ -96,16 +96,16 @@ function action_deploy {
 
     # Check if configuration file exits
     if [[ ! -f "${configuration_path}" ]]; then
-        e "<error>Configuration file not found in the given location</error>"
+        e "<error>Configuration file not found</error>"
         exit
     fi
 
     # Ask for task name and stage
-    e "<info>Please provide the name of the task to run:</info>"
+    e "<info>Name of the task to run:</info>"
     read -p " > " -e -i "deploy" task
 
     e ""
-    e "<info>Please provide the stage:</info>"
+    e "<info>Stage:</info>"
     read -p " > " -e -i "develop" stage
     e ""
 
