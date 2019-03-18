@@ -78,13 +78,13 @@ class DeployerRunCommand extends Command {
         $defaultDirectory = file_exists($defaultDirectory) && is_dir($defaultDirectory) ? $defaultDirectory : null;
 
         // Ask for path to directory where the keys will be generated
-        $generateDirectory = $io->ask("Please enter the path to the folder where the keys will be generated", $defaultDirectory);
+        $generateDirectory = $io->ask("The location of the generated SSH keys:", $defaultDirectory);
 
         // Check specified path
         if (null !== $generateDirectory && file_exists($generateDirectory) && is_dir($generateDirectory)) {
 
             // Define the key name and path
-            $keyName = $io->ask("Please enter the key file name", "deployer_rsa");
+            $keyName = $io->ask("The name of the SSH key:", "deployer_rsa");
             $keyPath = $this->generatePath($generateDirectory, $keyName);
 
             // Check if file exist
@@ -93,7 +93,7 @@ class DeployerRunCommand extends Command {
             }
 
             // Run process to generate key with ssh-keygen
-            // ssh-keygen -t rsa -f %sshKey% -N "" -C ""
+            // ssh-keygen -t rsa -f %sshKey% -N "" -C "deployer"
             $executeProcess = $this->generateProcess("ssh-keygen", "-t", "rsa", "-f", $keyPath, "-N", "", "-C", "deployer");
             $executeProcess->disableOutput();
             $executeProcess->run(function ($type, $buffer) {
@@ -114,11 +114,11 @@ class DeployerRunCommand extends Command {
 
         // Check if Deployer entry file exist in specified path
         if (!file_exists($deployerConfigPath)) {
-            throw new Exception("Configuration file not found in the given location");
+            throw new Exception("Configuration file not found");
         }
 
         // Ask for hostname to verify
-        $verifyHostname = $io->ask("Please enter the hostname to verify");
+        $verifyHostname = $io->ask("Hostname to verify:");
 
         // Define path to Deployer vendor
         $deployerVendor = $this->generatePath($this->projectDirectory, "vendor", "bin", "dep");
@@ -145,12 +145,15 @@ class DeployerRunCommand extends Command {
 
         // Check if Deployer entry file exist in specified path
         if (!file_exists($deployerConfigPath)) {
-            throw new Exception("Configuration file not found in the given location");
+            throw new Exception("Configuration file not found");
         }
 
         // Ask for task name and stage
-        $taskName = $io->ask("Please provide the name of the task to run", "deploy");
-        $taskStage = $io->ask("Please provide the stage", "develop");
+        $taskName = $io->ask("Name of the task to run:", "deploy");
+        $taskStage = $io->ask("Stage:", "develop");
+
+        // TTY mode
+        $useTTY = $io->confirm("Enable TTY mode?", false);
 
         // Define path to Deployer vendor
         $deployerVendor = $this->generatePath($this->projectDirectory, "vendor", "bin", "dep");
@@ -159,6 +162,7 @@ class DeployerRunCommand extends Command {
         // %rootPath%\vendor\bin\dep --file=.deployer\deploy.php %taskName% %taskStage%
         $executeProcess = $this->generateProcess($deployerVendor, "-f.deployer/deploy.php", $taskName, $taskStage);
         $executeProcess->disableOutput();
+        $executeProcess->setTty($useTTY);
         $executeProcess->setTimeout(null);
         $executeProcess->run(function ($type, $buffer) {
             echo $buffer;
