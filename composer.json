@@ -34,7 +34,8 @@
         }
     },
     "bin": [
-        "bin/deployer"
+        "bin/deployer",
+        "bin/create-config"
     ],
     "extra": {
         "branch-alias": {

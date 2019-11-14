@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+# Define variables
+CONFIG_DIRECTORY=${PWD}/.deployer
+
+# Create root directory if not exist
+if [[ ! -d $CONFIG_DIRECTORY ]]; then
+    mkdir ${CONFIG_DIRECTORY}
+fi
+
+# Create SSH directory
+if [[ ! -d $CONFIG_DIRECTORY/.ssh ]]; then
+    mkdir ${CONFIG_DIRECTORY}/.ssh
+fi
+
+# Write config.php
+if [[ ! -f ${CONFIG_DIRECTORY}/config.php ]]; then
+    echo '<?php
+
+namespace Deployer;
+
+/**
+ * Global Configuration
+ */
+set("application", "example-application");
+set("repository", "git@github.com:m-adamski/example-application.git");
+set("ssh_multiplexing", false);
+set("git_tty", false);
+
+set("shared_dirs", ["var/log"]);
+set("shared_files", [".env.local"]);
+set("writable_dirs", ["var"]);
+
+set("sudo_password", function () {
+    return askHiddenResponse("[sudo] password: ");
+});
+
+set("allow_anonymous_stats", false);' >> ${CONFIG_DIRECTORY}/config.php
+fi
+
+# Write deployer.php
+if [[ ! -f ${CONFIG_DIRECTORY}/deployer.php ]]; then
+    echo '<?php
+
+namespace Deployer;
+
+require_once "recipe/symfony4.php";
+require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/hosts.php";
+require_once __DIR__ . "/tasks.php";
+
+/**
+ * Additional workflow events
+ */
+before("deploy:writable", "deploy:writable:prepare");
+after("deploy:cache:warmup", "deploy:restart:php");
+after("deploy:failed", "deploy:unlock");' > ${CONFIG_DIRECTORY}/deployer.php
+fi
+
+# Write hosts.php
+if [[ ! -f ${CONFIG_DIRECTORY}/hosts.php ]]; then
+    echo '<?php
+
+namespace Deployer;
+
+/**
+ * Hosts
+ */
+host("example.com")
+    ->stage("production")
+    ->user("deployer")
+    ->identityFile(__DIR__ . "/.ssh/production/deployer_rsa")
+    ->addSshOption("UserKnownHostsFile", "/dev/null")
+    ->addSshOption("StrictHostKeyChecking", "no")
+    ->set("php_version", "php7.2-fpm")
+    ->set("deploy_path", "/var/www/vhosts/example.com")
+    ->set("branch", "master");' > ${CONFIG_DIRECTORY}/hosts.php
+fi
+
+# Write tasks.php
+if [[ ! -f ${CONFIG_DIRECTORY}/tasks.php ]]; then
+    echo '<?php
+
+namespace Deployer;
+
+task("deploy:restart:php", function () {
+    run("echo '\''{{ sudo_password }}'\'' | sudo -S service {{ php_version }} restart");
+})->desc("Restart PHP");
+
+task("deploy:writable:prepare", function () {
+    $dirs = join(" ", get("writable_dirs"));
+
+    cd("{{ release_path }}");
+    run("echo '\''{{ sudo_password }}'\'' | sudo -S setfacl -RL -m mask:rwX $dirs");
+})->desc("Prepare writable");' > ${CONFIG_DIRECTORY}/tasks.php
+fi
