@@ -1,6 +1,8 @@
-# Deployer Bundle for Symfony 4
+# Deployer Bundle for Symfony
 
-Bundle for Symfony 4 for easier Deployer configuration.
+Bundle for Symfony for easier Deployer configuration.
+
+This bundle is compatible with Symfony 4.1 and Symfony 5.0. Symfony 3.4 compatibility abandoned.
 
 ## Installation
 
